@@ -312,7 +312,8 @@ def main():
                       f"RSSI={rssi} SNR={snr}")
                 continue
 
-            print(f"From {src} | {ascii_payload!r} | RSSI={rssi} SNR={snr}")
+            # [STREAM LOG SUPPRESSED] per-packet RX log (fires every epoch, not useful in production)
+            # print(f"From {src} | {ascii_payload!r} | RSSI={rssi} SNR={snr}")
 
             msg_type, raw = reassembler.feed(ascii_payload)
             if msg_type is None:
@@ -322,14 +323,16 @@ def main():
             seq_id = (seq_id + 1) % 32
 
             if result is None:
-                print(f"  [{msg_type}] {len(raw)} bytes - DROPPED (exceeds max fragmentable size)")
+                print(f"  [{msg_type}] {len(raw)} bytes - DROPPED (exceeds max fragmentable size)")  # KEEP: critical
             elif len(result) == 1:
-                flags, length = result[0]
-                print(f"  [{msg_type}] {len(raw)} bytes -> sent to FC (1 packet, {length}B) - ack")
+                pass  # [STREAM LOG SUPPRESSED] successful 1-packet forward
+                # flags, length = result[0]
+                # print(f"  [{msg_type}] {len(raw)} bytes -> sent to FC (1 packet, {length}B) - ack")
             else:
-                parts = ", ".join(f"frag{((f>>1)&0x3)}:{l}B" for f, l in result)
-                print(f"  [{msg_type}] {len(raw)} bytes -> sent to FC "
-                      f"({len(result)} fragments: {parts}) - ack")
+                pass  # [STREAM LOG SUPPRESSED] successful fragmented forward
+                # parts = ", ".join(f"frag{((f>>1)&0x3)}:{l}B" for f, l in result)
+                # print(f"  [{msg_type}] {len(raw)} bytes -> sent to FC "
+                #       f"({len(result)} fragments: {parts}) - ack")
     except KeyboardInterrupt:
         print("\nStopped by user.")
     finally:
